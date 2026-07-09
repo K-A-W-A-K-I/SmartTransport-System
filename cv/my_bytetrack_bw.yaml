@@ -1,0 +1,8 @@
+# my_bytetrack_bw.yaml - optimized for black & white overhead footage
+tracker_type: bytetrack
+track_high_thresh: 0.25     # lowered further from 0.3
+track_low_thresh: 0.03      # lowered from 0.05 - tracks even weaker detections
+new_track_thresh: 0.3       # lowered from 0.4 - creates tracks more easily
+track_buffer: 120           # increased from 90 - keeps lost tracks alive 4 seconds
+match_thresh: 0.65          # lowered from 0.7 - even more lenient matching
+fuse_score: True

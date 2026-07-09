@@ -1,0 +1,26 @@
+# Environment variables — never commit credentials
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# YOLO / model outputs
+runs/
+*.pt
+
+# Large data files — download separately
+data/videos/
+
+# ETL logs
+etl/logs/

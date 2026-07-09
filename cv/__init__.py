@@ -1,0 +1,1 @@
+"""cv package — computer vision modules for SmartTransport."""

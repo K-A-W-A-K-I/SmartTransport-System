@@ -1,0 +1,15 @@
+# my_botsort.yaml
+tracker_type: botsort
+track_high_thresh: 0.5
+track_low_thresh: 0.1
+new_track_thresh: 0.6
+track_buffer: 60          # keep the fix that solved your occlusion problem
+match_thresh: 0.8
+fuse_score: True
+
+# BoT-SORT-specific additions:
+gmc_method: sparseOptFlow   # camera motion compensation (leave default)
+with_reid: True             # ← this is the key one for your crossing-paths problem
+proximity_thresh: 0.5
+appearance_thresh: 0.25
+model: auto                 # uses a lightweight built-in ReID feature extractor
