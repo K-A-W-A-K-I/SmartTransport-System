@@ -24,3 +24,6 @@ data/videos/
 
 # ETL logs
 etl/logs/
+
+# Internal docs — journals and internship notes
+docs/

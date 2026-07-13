@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% block page_title %}Bus Management{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Bus Management</h1>
+    <div class="breadcrumb">Fleet overview — {{ kpi.total }} buses total</div>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert alert-warning mb-4" style="font-size:13px;">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+</div>
+{% endif %}
+
+<!-- ── KPI Cards ──────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#e8f5e9;">
+        <i class="bi bi-bus-front-fill" style="color:#2e7d32;"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Active Buses</div>
+        <div class="kpi-value">{{ kpi.active }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#f5f5f5;">
+        <i class="bi bi-bus-front" style="color:#757575;"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Inactive Buses</div>
+        <div class="kpi-value">{{ kpi.inactive }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#e8f0fe;">
+        <i class="bi bi-people-fill" style="color:#3b7dd8;"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Average Capacity</div>
+        <div class="kpi-value">{{ kpi.avg_capacity }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#fff3e0;">
+        <i class="bi bi-speedometer2" style="color:#f57c00;"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Avg Peak Occ. Today</div>
+        <div class="kpi-value">{{ kpi.avg_occ }}<span style="font-size:16px;font-weight:500;color:#6c7a8d;">%</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Table ─────────────────────────────────────────────────────────── -->
+{% if buses %}
+<div class="data-table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>License Plate</th>
+        <th>Line</th>
+        <th>Driver</th>
+        <th class="text-center">Capacity</th>
+        <th class="text-center">Peak Occ.</th>
+        <th class="text-center">Occ. %</th>
+        <th class="text-center">Status</th>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in buses %}
+      {% set occ = b.occupancy_rate | float %}
+      {% set occ_cls = 'red' if occ >= 80 else 'orange' if occ >= 50 else 'green' %}
+      <tr>
+        <td>
+          <div class="plate-cell">
+            <i class="bi bi-bus-front-fill" style="color:#3b7dd8;"></i>
+            <strong>{{ b.license_plate or 'Bus #' ~ b.bus_id }}</strong>
+          </div>
+        </td>
+        <td>
+          {% if b.line_id %}
+          <span class="line-badge">{{ b.line_number }}</span>
+          <span class="line-name">{{ b.line_name }}</span>
+          {% else %}
+          <span style="color:#a0aab4;">—</span>
+          {% endif %}
+        </td>
+        <td>{{ b.driver_name or '—' }}</td>
+        <td class="text-center">{{ b.capacity }}</td>
+        <td class="text-center">{{ b.current_occupancy }}</td>
+        <td class="text-center">
+          <span class="occ-badge occ-{{ occ_cls }}">{{ '%.1f' | format(occ) }}%</span>
+        </td>
+        <td class="text-center">
+          <span class="status-badge status-{{ b.status | lower }}">
+            {{ b.status | title }}
+          </span>
+        </td>
+        <td class="text-center">
+          <button class="btn-edit"
+                  data-bs-toggle="modal" data-bs-target="#editBusModal"
+                  data-id="{{ b.bus_id }}"
+                  data-plate="{{ b.license_plate or '' }}"
+                  data-capacity="{{ b.capacity }}"
+                  data-line="{{ b.line_id or '' }}"
+                  data-driver="{{ b.driver_id or '' }}"
+                  data-status="{{ b.status }}">
+            <i class="bi bi-pencil-fill"></i> Edit
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="bi bi-bus-front"></i><p>No buses found.</p>
+</div>
+{% endif %}
+
+
+<!-- ═══ EDIT MODAL ═══════════════════════════════════════════════════════ -->
+<div class="modal fade" id="editBusModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
+    <div class="modal-content modal-custom">
+      <div class="modal-header-custom">
+        <h5><i class="bi bi-pencil-fill me-2"></i>Edit Bus</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" id="editBusForm">
+        <div class="modal-body-custom">
+
+          <div class="form-row-2">
+            <div>
+              <label class="form-label">License Plate</label>
+              <input type="text" name="license_plate" id="editPlate" class="form-control">
+            </div>
+            <div>
+              <label class="form-label">Capacity <span class="req">*</span></label>
+              <input type="number" name="capacity" id="editCapacity"
+                     class="form-control" min="1" max="200" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Assigned Line</label>
+            <select name="line_id" id="editLine" class="form-control">
+              <option value="">— Unassigned —</option>
+              {% for l in lines %}
+              <option value="{{ l.line_id }}">{{ l.line_number }} — {{ l.line_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Assigned Driver</label>
+            <select name="driver_id" id="editDriver" class="form-control">
+              <option value="">— Unassigned —</option>
+              {% for d in drivers %}
+              <option value="{{ d.driver_id }}">{{ d.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Status <span class="req">*</span></label>
+            <select name="status" id="editStatus" class="form-control">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+
+          <p class="form-note">
+            <i class="bi bi-info-circle"></i>
+            Occupancy is read-only — it comes from Computer Vision.
+          </p>
+
+        </div>
+        <div class="modal-footer-custom">
+          <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-save">
+            <i class="bi bi-check-lg me-1"></i> Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+  /* KPI cards */
+  .kpi-card {
+    background: #fff; border: 1px solid #e8ecf0; border-radius: 12px;
+    padding: 16px 18px; display: flex; align-items: center; gap: 14px;
+  }
+  .kpi-icon {
+    width: 46px; height: 46px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .kpi-label { font-size: 12px; color: #6c7a8d; font-weight: 500; }
+  .kpi-value { font-size: 26px; font-weight: 700; color: #1e2d3d; line-height: 1.1; }
+
+  /* Table */
+  .data-table-wrap {
+    background: #fff; border: 1px solid #e8ecf0; border-radius: 12px; overflow: hidden;
+  }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table thead { background: #f6f8fb; }
+  .data-table th {
+    padding: 11px 14px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em; color: #6c7a8d;
+    border-bottom: 1px solid #e8ecf0; white-space: nowrap;
+  }
+  .data-table td { padding: 12px 14px; border-bottom: 1px solid #f0f4f8; color: #1e2d3d; vertical-align: middle; }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:hover { background: #fafbfc; }
+  .text-center { text-align: center; }
+
+  .plate-cell { display: flex; align-items: center; gap: 8px; }
+
+  .line-badge {
+    display: inline-block; background: #e8f0fe; color: #3b7dd8;
+    font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 5px; margin-right: 4px;
+  }
+  .line-name { font-size: 12px; color: #4a5568; }
+
+  /* Occupancy badge */
+  .occ-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+  }
+  .occ-green  { background: #e8f5e9; color: #2e7d32; }
+  .occ-orange { background: #fff3e0; color: #e65100; }
+  .occ-red    { background: #fdecea; color: #c0392b; }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+  }
+  .status-active      { background: #e8f5e9; color: #2e7d32; }
+  .status-inactive    { background: #f5f5f5; color: #757575; }
+  .status-maintenance { background: #fff8e1; color: #f57f17; }
+
+  /* Edit button */
+  .btn-edit {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 7px;
+    background: #f0f4f8; color: #3b7dd8; border: none;
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: background .15s;
+  }
+  .btn-edit:hover { background: #e8f0fe; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 60px 20px; color: #a0aab4; }
+  .empty-state i { font-size: 48px; display: block; margin-bottom: 12px; }
+
+  /* Modal */
+  .modal-custom { border-radius: 14px; overflow: hidden; border: none; }
+  .modal-header-custom {
+    background: #1a2a4a; color: #fff; padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-header-custom h5 { margin: 0; font-size: 15px; font-weight: 600; }
+  .modal-body-custom  { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .modal-footer-custom {
+    padding: 14px 20px; display: flex; justify-content: flex-end; gap: 8px;
+    border-top: 1px solid #e8ecf0;
+  }
+  .form-label { font-size: 12px; font-weight: 600; color: #4a5568; margin-bottom: 4px; display: block; }
+  .req { color: #e53935; }
+  .form-control {
+    width: 100%; padding: 8px 10px; border: 1px solid #dde3ea;
+    border-radius: 7px; font-size: 13px; color: #1e2d3d;
+    background: #f6f8fb; outline: none; transition: border .15s;
+  }
+  .form-control:focus { border-color: #3b7dd8; background: #fff; }
+  .form-row   { display: flex; flex-direction: column; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-note  { font-size: 11.5px; color: #a0aab4; margin: 0; display: flex; align-items: center; gap: 5px; }
+  .btn-cancel { padding: 8px 16px; border-radius: 7px; background: #f0f4f8; color: #4a5568; border: none; font-size: 13px; cursor: pointer; }
+  .btn-save   { padding: 8px 18px; border-radius: 7px; background: #3b7dd8; color: #fff; border: none; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-save:hover { background: #2d69c4; }
+</style>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.btn-edit').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('editBusForm').action   = `/buses/${btn.dataset.id}/edit`;
+    document.getElementById('editPlate').value      = btn.dataset.plate    || '';
+    document.getElementById('editCapacity').value   = btn.dataset.capacity || '';
+    document.getElementById('editLine').value       = btn.dataset.line     || '';
+    document.getElementById('editDriver').value     = btn.dataset.driver   || '';
+    document.getElementById('editStatus').value     = btn.dataset.status   || 'active';
+  });
+});
+</script>
+{% endblock %}

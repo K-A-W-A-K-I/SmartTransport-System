@@ -175,7 +175,7 @@ def train(model_type: str = "random_forest") -> dict:
     """
     from sklearn.ensemble import RandomForestRegressor
     from sklearn.linear_model import LinearRegression
-    from sklearn.metrics import mean_absolute_error, r2_score
+    from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, root_mean_squared_error
     from sklearn.model_selection import train_test_split
     from sklearn.multioutput import MultiOutputRegressor
     from sklearn.pipeline import Pipeline
@@ -225,25 +225,31 @@ def train(model_type: str = "random_forest") -> dict:
     # Evaluate
     Y_pred = model.predict(X_test)
 
-    mae_boardings = mean_absolute_error(Y_test[:, 0], Y_pred[:, 0])
-    mae_occupancy = mean_absolute_error(Y_test[:, 1], Y_pred[:, 1])
-    r2_boardings  = r2_score(Y_test[:, 0], Y_pred[:, 0])
-    r2_occupancy  = r2_score(Y_test[:, 1], Y_pred[:, 1])
+    mae_boardings  = mean_absolute_error(Y_test[:, 0], Y_pred[:, 0])
+    mae_occupancy  = mean_absolute_error(Y_test[:, 1], Y_pred[:, 1])
+    rmse_boardings = root_mean_squared_error(Y_test[:, 0], Y_pred[:, 0])
+    rmse_occupancy = root_mean_squared_error(Y_test[:, 1], Y_pred[:, 1])
+    r2_boardings   = r2_score(Y_test[:, 0], Y_pred[:, 0])
+    r2_occupancy   = r2_score(Y_test[:, 1], Y_pred[:, 1])
 
     metrics = {
-        "model_type":      model_type,
-        "train_rows":      len(X_train),
-        "test_rows":       len(X_test),
-        "mae_boardings":   round(mae_boardings, 2),
-        "mae_occupancy":   round(mae_occupancy, 2),
-        "r2_boardings":    round(r2_boardings, 3),
-        "r2_occupancy":    round(r2_occupancy, 3),
+        "model_type":       model_type,
+        "train_rows":       len(X_train),
+        "test_rows":        len(X_test),
+        "mae_boardings":    round(mae_boardings, 2),
+        "mae_occupancy":    round(mae_occupancy, 2),
+        "rmse_boardings":   round(rmse_boardings, 2),
+        "rmse_occupancy":   round(rmse_occupancy, 2),
+        "r2_boardings":     round(r2_boardings, 3),
+        "r2_occupancy":     round(r2_occupancy, 3),
     }
 
     logger.info("=" * 50)
     logger.info(f"  Model      : {model_type}")
     logger.info(f"  MAE passengers : {mae_boardings:.2f}")
     logger.info(f"  MAE occupancy  : {mae_occupancy:.2f}%")
+    logger.info(f"  RMSE passengers: {rmse_boardings:.2f}")
+    logger.info(f"  RMSE occupancy : {rmse_occupancy:.2f}%")
     logger.info(f"  R² passengers  : {r2_boardings:.3f}")
     logger.info(f"  R² occupancy   : {r2_occupancy:.3f}")
     logger.info("=" * 50)

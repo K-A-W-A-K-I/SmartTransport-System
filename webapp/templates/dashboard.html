@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block page_title %}Operations Center{% endblock %}
+
+{% block content %}
+
+<!-- DB error banner -->
+{% if error %}
+<div class="alert alert-warning d-flex align-items-center gap-2 mb-4" style="font-size:13px;">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  <span>Database warning: {{ error }}</span>
+</div>
+{% endif %}
+
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <h1>Operations Center</h1>
+    <div class="breadcrumb">Real-time network overview</div>
+  </div>
+  <span style="font-size:12px; color:#6c7a8d;">
+    <i class="bi bi-circle-fill text-success" style="font-size:8px;"></i>
+    &nbsp;Live data
+  </span>
+</div>
+
+<!-- ── KPI Cards ──────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+
+  <!-- Current Bus Occupancy -->
+  <div class="col-sm-6 col-xl-4">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#e8f0fe;">
+        <i class="bi bi-people-fill" style="color:#3b7dd8;"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Current Bus Occupancy</div>
+        <div class="kpi-value">{{ current_occupancy }}</div>
+        <div class="kpi-sub">passengers on board</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Average Occupancy -->
+  <div class="col-sm-6 col-xl-4">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#e6f9f0;">
+        <i class="bi bi-speedometer2" style="color:#1db975;"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Average Occupancy Today</div>
+        <div class="kpi-value">{{ avg_occupancy }}<span class="kpi-unit">%</span></div>
+        <div class="kpi-sub">across all active buses</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tickets Sold Today -->
+  <div class="col-sm-6 col-xl-4">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#fff3e0;">
+        <i class="bi bi-ticket-perforated-fill" style="color:#f57c00;"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Tickets Sold Today</div>
+        <div class="kpi-value">{{ tickets_today }}</div>
+        <div class="kpi-sub">validated ticket sales</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Buses -->
+  <div class="col-sm-6 col-xl-4">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#f3e5f5;">
+        <i class="bi bi-bus-front-fill" style="color:#8e24aa;"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Active Buses</div>
+        <div class="kpi-value">{{ active_buses }}</div>
+        <div class="kpi-sub">buses with a session today</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Recommendations -->
+  <div class="col-sm-6 col-xl-4">
+    <div class="kpi-card">
+      <div class="kpi-icon" style="background:#fff8e1;">
+        <i class="bi bi-lightbulb-fill" style="color:#fbc02d;"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Pending Recommendations</div>
+        <div class="kpi-value">{{ pending_recs }}</div>
+        <div class="kpi-sub">awaiting dispatcher action</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Critical Alerts -->
+  <div class="col-sm-6 col-xl-4">
+    <div class="kpi-card {% if critical_alerts > 0 %}kpi-card--alert{% endif %}">
+      <div class="kpi-icon" style="background:#fdecea;">
+        <i class="bi bi-exclamation-octagon-fill" style="color:#e53935;"></i>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-label">Critical Alerts</div>
+        <div class="kpi-value" style="{{ 'color:#e53935;' if critical_alerts > 0 else '' }}">
+          {{ critical_alerts }}
+        </div>
+        <div class="kpi-sub">CRITICAL recommendations pending</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- /KPI Cards -->
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* KPI card */
+  .kpi-card {
+    background: #fff;
+    border: 1px solid #e8ecf0;
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: box-shadow .15s;
+  }
+  .kpi-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+
+  .kpi-card--alert {
+    border-color: #f5c2c2;
+    background: #fffafa;
+  }
+
+  .kpi-icon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .kpi-label {
+    font-size: 12px;
+    color: #6c7a8d;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1e2d3d;
+    line-height: 1.1;
+  }
+
+  .kpi-unit {
+    font-size: 16px;
+    font-weight: 500;
+    color: #6c7a8d;
+  }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: #a0aab4;
+    margin-top: 2px;
+  }
+</style>
+{% endblock %}
