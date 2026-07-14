@@ -149,8 +149,11 @@
       flex: 1;
       max-width: 320px;
       position: relative;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: none;
     }
-
     .topbar-search input {
       width: 100%;
       padding: 6px 12px 6px 34px;
@@ -162,15 +165,14 @@
       outline: none;
       transition: border .15s;
     }
-
     .topbar-search input:focus { border-color: var(--accent); background: #fff; }
-
     .topbar-search i {
       position: absolute;
       left: 10px; top: 50%;
       transform: translateY(-50%);
       color: var(--text-muted);
       font-size: 14px;
+      pointer-events: none;
     }
 
     .topbar-spacer { flex: 1; }
@@ -363,6 +365,12 @@
       </a>
     </li>
     <li>
+      <a href="{{ url_for('settings.index') }}"
+         class="{{ 'active' if request.blueprint == 'settings' }}">
+        <i class="bi bi-gear-fill"></i> Settings
+      </a>
+    </li>
+    <li>
       <a href="#" target="_blank">
         <i class="bi bi-bar-chart-line-fill"></i> Analytics (Power BI)
       </a>
@@ -377,10 +385,12 @@
 <header id="topbar">
   <span class="topbar-title">{{ self.page_title() }}</span>
 
-  <div class="topbar-search">
+  <form class="topbar-search" action="/search" method="GET" role="search">
     <i class="bi bi-search"></i>
-    <input type="text" placeholder="Search operations, assets…" />
-  </div>
+    <input type="text" name="q" placeholder="Search buses, drivers, stations…"
+           value="{{ request.args.get('q', '') }}"
+           autocomplete="off" />
+  </form>
 
   <div class="topbar-spacer"></div>
 
@@ -391,9 +401,9 @@
   </div>
 
   <!-- Bell -->
-  <div class="topbar-bell">
+  <div class="topbar-bell" title="{{ g_critical_alerts }} critical alert(s)">
     <i class="bi bi-bell-fill"></i>
-    <span class="dot"></span>
+    {% if g_critical_alerts > 0 %}<span class="dot"></span>{% endif %}
   </div>
 
   <!-- User -->
@@ -413,9 +423,12 @@
 <div class="flash-container">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% for category, message in messages %}
-      <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show shadow-sm"
+      <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show shadow-sm d-flex align-items-center gap-2"
            role="alert" style="font-size:13px;">
-        {{ message }}
+        {% if category == 'success' %}<i class="bi bi-check-circle-fill text-success"></i>
+        {% elif category == 'error' %}<i class="bi bi-x-circle-fill text-danger"></i>
+        {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+        <span>{{ message }}</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
       </div>
     {% endfor %}

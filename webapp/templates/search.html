@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block page_title %}Search{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Search Results</h1>
+    <div class="breadcrumb">
+      {% if q %}
+        {{ total }} result{{ 's' if total != 1 }} for "<strong>{{ q }}</strong>"
+      {% else %}
+        Enter a search term above
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if results.get('error') %}
+<div class="alert alert-warning" style="font-size:13px;">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ results.error }}
+</div>
+{% endif %}
+
+{% if q and total == 0 and not results.get('error') %}
+<div class="empty-state">
+  <i class="bi bi-search"></i>
+  <p>No results found for "{{ q }}".</p>
+  <span style="font-size:13px; color:#a0aab4;">Try searching by license plate, driver name, station, or line.</span>
+</div>
+{% endif %}
+
+{% if results.get('buses') %}
+<div class="result-section">
+  <div class="result-section-title">
+    <i class="bi bi-bus-front-fill"></i> Buses
+    <span class="result-count-badge">{{ results.buses | length }}</span>
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>License Plate</th>
+          <th>Line</th>
+          <th>Driver</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in results.buses %}
+        <tr>
+          <td><strong>{{ b.license_plate or 'Bus #' ~ b.bus_id }}</strong></td>
+          <td>
+            <span class="line-badge">{{ b.line_number }}</span>
+            <span style="font-size:12px;color:#4a5568;">{{ b.line_name }}</span>
+          </td>
+          <td>{{ b.driver_name or '—' }}</td>
+          <td><span class="status-badge status-{{ b.status | lower }}">{{ b.status | title }}</span></td>
+          <td><a href="{{ url_for('buses.index') }}" class="go-link">Go →</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if results.get('drivers') %}
+<div class="result-section">
+  <div class="result-section-title">
+    <i class="bi bi-person-badge-fill"></i> Drivers
+    <span class="result-count-badge">{{ results.drivers | length }}</span>
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>License No.</th>
+          <th>Phone</th>
+          <th>Assigned Bus</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in results.drivers %}
+        {% set st = d.status | lower | replace(' ','_') %}
+        <tr>
+          <td><strong>{{ d.full_name }}</strong></td>
+          <td><code style="font-size:12px;">{{ d.license_number }}</code></td>
+          <td>{{ d.phone or '—' }}</td>
+          <td>{{ d.bus_plate or '—' }}</td>
+          <td><span class="status-badge status-{{ st }}">{{ d.status | replace('_',' ') | title }}</span></td>
+          <td><a href="{{ url_for('drivers.index') }}" class="go-link">Go →</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if results.get('stations') %}
+<div class="result-section">
+  <div class="result-section-title">
+    <i class="bi bi-geo-alt-fill"></i> Stations
+    <span class="result-count-badge">{{ results.stations | length }}</span>
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>ID</th><th>Station Name</th></tr>
+      </thead>
+      <tbody>
+        {% for s in results.stations %}
+        <tr>
+          <td style="color:#a0aab4;">#{{ s.station_id }}</td>
+          <td><strong>{{ s.station_name }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if results.get('recs') %}
+<div class="result-section">
+  <div class="result-section-title">
+    <i class="bi bi-lightbulb-fill"></i> Recommendations
+    <span class="result-count-badge">{{ results.recs | length }}</span>
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Station</th>
+          <th>Line</th>
+          <th>Recommendation</th>
+          <th>Severity</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results.recs %}
+        <tr>
+          <td style="white-space:nowrap;font-size:12px;">
+            {{ r.created_at.strftime('%Y-%m-%d %H:%M') if r.created_at else '—' }}
+          </td>
+          <td>{{ r.station_name }}</td>
+          <td><span class="line-badge">{{ r.line_number }}</span></td>
+          <td style="max-width:260px;font-size:12.5px;color:#4a5568;">{{ r.recommendation }}</td>
+          <td><span class="sev-badge sev-{{ r.severity | lower }}">{{ r.severity | capitalize }}</span></td>
+          <td><span class="status-badge status-{{ r.status }}">{{ r.status | capitalize }}</span></td>
+          <td><a href="{{ url_for('recommendations.index') }}" class="go-link">Go →</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+  .result-section { margin-bottom: 28px; }
+
+  .result-section-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 700; color: #1e2d3d;
+    margin-bottom: 10px;
+  }
+  .result-count-badge {
+    background: #e8f0fe; color: #3b7dd8;
+    font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+  }
+
+  .data-table-wrap { background:#fff; border:1px solid #e8ecf0; border-radius:12px; overflow:hidden; }
+  .data-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .data-table thead { background:#f6f8fb; }
+  .data-table th { padding:10px 14px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#6c7a8d; border-bottom:1px solid #e8ecf0; }
+  .data-table td { padding:11px 14px; border-bottom:1px solid #f0f4f8; color:#1e2d3d; vertical-align:middle; }
+  .data-table tbody tr:last-child td { border-bottom:none; }
+  .data-table tbody tr:hover { background:#fafbfc; }
+
+  .line-badge { display:inline-block; background:#e8f0fe; color:#3b7dd8; font-size:11px; font-weight:700; padding:2px 7px; border-radius:5px; margin-right:4px; }
+
+  .status-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+  .status-active      { background:#e8f5e9; color:#2e7d32; }
+  .status-inactive    { background:#f5f5f5; color:#757575; }
+  .status-available   { background:#e8f5e9; color:#2e7d32; }
+  .status-on_duty     { background:#e3f2fd; color:#1565c0; }
+  .status-off_duty    { background:#f5f5f5; color:#757575; }
+  .status-on_leave    { background:#fff3e0; color:#e65100; }
+  .status-pending     { background:#fff3e0; color:#e65100; }
+  .status-acknowledged{ background:#e3f2fd; color:#1565c0; }
+  .status-resolved    { background:#e8f5e9; color:#2e7d32; }
+
+  .sev-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+  .sev-critical { background:#fdecea; color:#c0392b; }
+  .sev-high     { background:#fff3e0; color:#e65100; }
+  .sev-medium   { background:#fffde7; color:#f57f17; }
+  .sev-low      { background:#e8f5e9; color:#2e7d32; }
+
+  .go-link { font-size:12px; color:#3b7dd8; text-decoration:none; font-weight:600; }
+  .go-link:hover { text-decoration:underline; }
+
+  .empty-state { text-align:center; padding:60px 20px; color:#a0aab4; }
+  .empty-state i { font-size:48px; display:block; margin-bottom:12px; }
+</style>
+{% endblock %}

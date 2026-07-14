@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Settings</h1>
+    <div class="breadcrumb">System configuration &amp; status</div>
+  </div>
+</div>
+
+<div class="settings-grid">
+
+  <!-- Database -->
+  <div class="settings-card">
+    <div class="sc-header"><i class="bi bi-database-fill"></i> Database</div>
+    <div class="sc-body">
+      <div class="sc-row">
+        <span class="sc-label">Status</span>
+        <span class="sc-value">
+          {% if db_ok %}
+          <span class="s-badge s-ok"><i class="bi bi-check-circle-fill"></i> Connected</span>
+          {% else %}
+          <span class="s-badge s-err"><i class="bi bi-x-circle-fill"></i> Disconnected</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Host</span>
+        <span class="sc-value mono">{{ db_host }}:{{ db_port }}</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Database</span>
+        <span class="sc-value mono">{{ db_name }}</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Version</span>
+        <span class="sc-value mono" style="font-size:11px;">{{ db_version }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Computer Vision -->
+  <div class="settings-card">
+    <div class="sc-header"><i class="bi bi-camera-video-fill"></i> Computer Vision</div>
+    <div class="sc-body">
+      <div class="sc-row">
+        <span class="sc-label">YOLO Model</span>
+        <span class="sc-value">
+          {% if yolo_exists %}
+          <span class="s-badge s-ok"><i class="bi bi-check-circle-fill"></i> yolo11n.pt</span>
+          {% else %}
+          <span class="s-badge s-err"><i class="bi bi-x-circle-fill"></i> Not found</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Model Size</span>
+        <span class="sc-value mono">{{ yolo_size }}</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Tracker</span>
+        <span class="sc-value">ByteTrack</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Detector</span>
+        <span class="sc-value">YOLOv11n</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prediction -->
+  <div class="settings-card">
+    <div class="sc-header"><i class="bi bi-graph-up-arrow"></i> Prediction Engine</div>
+    <div class="sc-body">
+      <div class="sc-row">
+        <span class="sc-label">Model</span>
+        <span class="sc-value">Random Forest</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Status</span>
+        <span class="sc-value">
+          {% if ml_exists %}
+          <span class="s-badge s-ok"><i class="bi bi-check-circle-fill"></i> Trained</span>
+          {% else %}
+          <span class="s-badge s-err"><i class="bi bi-x-circle-fill"></i> Not trained</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">MAE Passengers</span>
+        <span class="sc-value mono">2.28</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">MAE Occupancy</span>
+        <span class="sc-value mono">2.19%</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">R² Score</span>
+        <span class="sc-value mono">0.944</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">RMSE</span>
+        <span class="sc-value mono">3.30</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Risk Threshold</span>
+        <span class="sc-value">80% → HIGH · 95% → CRITICAL</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application -->
+  <div class="settings-card">
+    <div class="sc-header"><i class="bi bi-info-circle-fill"></i> Application</div>
+    <div class="sc-body">
+      <div class="sc-row">
+        <span class="sc-label">Version</span>
+        <span class="sc-value mono">v{{ version }}</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Framework</span>
+        <span class="sc-value">Flask 3.x + Jinja2</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">ORM</span>
+        <span class="sc-value">SQLAlchemy</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">BI Platform</span>
+        <span class="sc-value">Power BI Desktop</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Run portal</span>
+        <span class="sc-value mono" style="font-size:11px;">python webapp/app.py</span>
+      </div>
+      <div class="sc-row">
+        <span class="sc-label">Run ETL</span>
+        <span class="sc-value mono" style="font-size:11px;">python -m etl.run_etl</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .settings-card { background:#fff; border:1px solid #e8ecf0; border-radius:12px; overflow:hidden; }
+  .sc-header {
+    background:#1a2a4a; color:#fff; padding:14px 18px;
+    display:flex; align-items:center; gap:8px;
+    font-size:14px; font-weight:600;
+  }
+  .sc-body { padding:4px 0; }
+  .sc-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 18px; border-bottom:1px solid #f0f4f8; gap:12px;
+  }
+  .sc-row:last-child { border-bottom:none; }
+  .sc-label { font-size:12px; font-weight:600; color:#6c7a8d; white-space:nowrap; }
+  .sc-value { font-size:13px; color:#1e2d3d; text-align:right; }
+  .mono { font-family:'Consolas',monospace; font-size:12px; }
+  .s-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 10px; border-radius:20px;
+    font-size:12px; font-weight:600;
+  }
+  .s-ok  { background:#e8f5e9; color:#2e7d32; }
+  .s-err { background:#fdecea; color:#c0392b; }
+</style>
+{% endblock %}

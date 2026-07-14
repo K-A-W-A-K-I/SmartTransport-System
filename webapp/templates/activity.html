@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% block page_title %}System Activity{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>System Activity</h1>
+    <div class="breadcrumb">{{ events | length }} events loaded</div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="type-tabs">
+    {% set tabs = [
+      ('all',             'bi-list-ul',                  'All'),
+      ('recommendations', 'bi-lightbulb-fill',           'Recommendations'),
+      ('tickets',         'bi-ticket-perforated-fill',   'Tickets'),
+      ('sessions',        'bi-camera-video-fill',        'CV Sessions'),
+    ] %}
+    {% for val, icon, label in tabs %}
+    <a href="{{ url_for('activity.index') }}?type={{ val }}&limit={{ limit }}"
+       class="tab-btn {{ 'active' if active_type == val }}">
+      <i class="bi {{ icon }}"></i> {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+{% if error %}
+<div class="alert alert-warning mb-4" style="font-size:13px;">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error }}
+</div>
+{% endif %}
+
+<!-- ── Feed ──────────────────────────────────────────────────────────── -->
+{% if events %}
+
+{# Group by date #}
+{% set ns = namespace(current_date=None) %}
+
+<div class="feed-wrap">
+  {% for e in events %}
+
+    {# Date separator #}
+    {% set edate = e.ts.strftime('%Y-%m-%d') if e.ts else '' %}
+    {% if edate != ns.current_date %}
+      {% if ns.current_date is not none %}
+      </div>  {# close previous group #}
+      {% endif %}
+      {% set ns.current_date = edate %}
+      <div class="date-group">
+        <div class="date-label">
+          {% if edate == today %}
+            Today — {{ edate }}
+          {% elif edate == yesterday %}
+            Yesterday — {{ edate }}
+          {% else %}
+            {{ edate }}
+          {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Event row -->
+    <div class="event-row">
+      <!-- Timeline line + dot -->
+      <div class="event-timeline">
+        <div class="event-dot" style="background:{{ e.color }}; box-shadow: 0 0 0 4px {{ e.bg }};">
+          <i class="bi {{ e.icon }}" style="color:#fff; font-size:10px;"></i>
+        </div>
+        <div class="event-line"></div>
+      </div>
+
+      <!-- Content -->
+      <div class="event-card">
+        <div class="event-header">
+          <span class="event-title">{{ e.title }}</span>
+
+          {% if e.badge %}
+          <span class="sev-badge sev-{{ e.badge | lower }}">{{ e.badge | capitalize }}</span>
+          {% endif %}
+
+          <span class="event-time">
+            <i class="bi bi-clock"></i>
+            {{ e.ts.strftime('%H:%M') if e.ts else '—' }}
+          </span>
+        </div>
+
+        {% if e.detail %}
+        <div class="event-detail">{{ e.detail }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+  {% endfor %}
+  </div> {# close last date group #}
+</div>
+
+<!-- Load more -->
+{% if events | length >= limit %}
+<div class="text-center mt-4">
+  <a href="?type={{ active_type }}&limit={{ limit + 100 }}" class="btn-load-more">
+    <i class="bi bi-arrow-down-circle"></i> Load more
+  </a>
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <i class="bi bi-activity"></i>
+  <p>No activity found.</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+  /* ── Header tabs ─────────────────────────────────────────────────────── */
+  .type-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tab-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    color: #6c7a8d; background: #fff; border: 1px solid #dde3ea;
+    text-decoration: none; transition: all .15s;
+  }
+  .tab-btn:hover { background: #f0f4f8; color: #1e2d3d; }
+  .tab-btn.active { background: #3b7dd8; color: #fff; border-color: #3b7dd8; }
+
+  /* ── Feed layout ─────────────────────────────────────────────────────── */
+  .feed-wrap { display: flex; flex-direction: column; }
+
+  /* Date group */
+  .date-group { display: flex; flex-direction: column; margin-bottom: 8px; }
+  .date-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: #a0aab4;
+    padding: 16px 0 8px; display: flex; align-items: center; gap: 10px;
+  }
+  .date-label::after {
+    content: ''; flex: 1; height: 1px; background: #e8ecf0;
+  }
+
+  /* Event row */
+  .event-row {
+    display: flex; gap: 0; align-items: flex-start;
+    margin-bottom: 2px;
+  }
+
+  /* Timeline column */
+  .event-timeline {
+    display: flex; flex-direction: column; align-items: center;
+    width: 36px; flex-shrink: 0; padding-top: 12px;
+  }
+  .event-dot {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; z-index: 1;
+  }
+  .event-line {
+    width: 2px; background: #e8ecf0; flex: 1;
+    min-height: 20px; margin-top: 2px;
+  }
+  .event-row:last-child .event-line { display: none; }
+
+  /* Event card */
+  .event-card {
+    flex: 1; background: #fff; border: 1px solid #e8ecf0;
+    border-radius: 10px; padding: 12px 16px; margin-left: 12px;
+    margin-bottom: 8px; transition: box-shadow .15s;
+  }
+  .event-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.06); }
+
+  .event-header {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .event-title {
+    font-size: 13.5px; font-weight: 600; color: #1e2d3d; flex: 1;
+  }
+  .event-time {
+    font-size: 12px; color: #a0aab4;
+    display: flex; align-items: center; gap: 4px; white-space: nowrap;
+  }
+  .event-detail {
+    font-size: 12.5px; color: #6c7a8d; margin-top: 4px; line-height: 1.4;
+  }
+
+  /* Severity badges */
+  .sev-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 20px;
+    font-size: 10px; font-weight: 700; white-space: nowrap;
+  }
+  .sev-critical { background: #fdecea; color: #c0392b; }
+  .sev-high     { background: #fff3e0; color: #e65100; }
+  .sev-medium   { background: #fffde7; color: #f57f17; }
+  .sev-low      { background: #e8f5e9; color: #2e7d32; }
+  .sev-info     { background: #e3f2fd; color: #1565c0; }
+
+  /* Load more */
+  .btn-load-more {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 20px; border-radius: 8px;
+    background: #fff; border: 1px solid #dde3ea;
+    font-size: 13px; color: #3b7dd8; text-decoration: none;
+    transition: background .15s;
+  }
+  .btn-load-more:hover { background: #f0f4f8; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 60px 20px; color: #a0aab4; }
+  .empty-state i { font-size: 48px; display: block; margin-bottom: 12px; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Pass today/yesterday to Jinja via JS (avoids server-side date math)
+// Already handled server-side below — this is a no-op placeholder
+</script>
+{% endblock %}

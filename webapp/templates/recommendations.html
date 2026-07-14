@@ -148,7 +148,8 @@
             <form method="POST"
                   action="{{ url_for('recommendations.do_acknowledge', rec_id=r.recommendation_id) }}"
                   style="display:inline;">
-              <button type="submit" class="act-btn act-ack" title="Acknowledge">
+              <button type="submit" class="act-btn act-ack" title="Acknowledge"
+                      onclick="return confirm('Acknowledge this recommendation?')">
                 <i class="bi bi-check-lg"></i>
               </button>
             </form>
@@ -159,7 +160,8 @@
             <form method="POST"
                   action="{{ url_for('recommendations.do_resolve', rec_id=r.recommendation_id) }}"
                   style="display:inline;">
-              <button type="submit" class="act-btn act-resolve" title="Resolve">
+              <button type="submit" class="act-btn act-resolve" title="Resolve"
+                      onclick="return confirm('Resolve this recommendation?')">
                 <i class="bi bi-check2-all"></i>
               </button>
             </form>
