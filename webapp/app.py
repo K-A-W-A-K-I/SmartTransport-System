@@ -41,6 +41,7 @@ from webapp.routes.drivers         import drivers_bp
 from webapp.routes.activity        import activity_bp
 from webapp.routes.settings        import settings_bp
 from webapp.routes.search          import search_bp
+from webapp.routes.analytics       import analytics_bp
 
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(tickets_bp)
@@ -50,6 +51,7 @@ app.register_blueprint(drivers_bp)
 app.register_blueprint(activity_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(search_bp)
+app.register_blueprint(analytics_bp)
 
 
 if __name__ == "__main__":

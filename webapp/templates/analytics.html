@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+{% block page_title %}Analytics{% endblock %}
+
+{% set PBI_URL = "https://app.powerbi.com/links/ihgLaoHKDa?ctid=604f1a96-cbe8-43f8-abbf-f8eaf5d85730&pbi_source=linkShare" %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Business Intelligence</h1>
+    <div class="breadcrumb">Powered by Microsoft Power BI</div>
+  </div>
+</div>
+
+<p class="bi-intro">
+  Power BI provides strategic analytics and historical insights generated from the
+  SmartTransport ETL pipeline. Operational tasks are performed in the Operations Portal,
+  while long-term trends and executive KPIs are analyzed in Power BI.
+</p>
+
+<div class="analytics-layout">
+
+  <!-- Left — Dashboard cards -->
+  <div class="dashboards-col">
+    <h2 class="section-title">Available Dashboards</h2>
+    <div class="dashboard-grid">
+
+      <!-- Executive Overview -->
+      <div class="db-card">
+        <div class="db-card-header" style="background:linear-gradient(135deg,#1a2a4a,#2e4e87);">
+          <div class="db-icon"><i class="bi bi-graph-up-arrow"></i></div>
+          <div>
+            <div class="db-title">Executive Overview</div>
+            <div class="db-subtitle">Network-wide KPIs and operational summary</div>
+          </div>
+        </div>
+        <div class="db-body">
+          <div class="db-metrics">
+            <span><i class="bi bi-people-fill"></i> Total Passengers</span>
+            <span><i class="bi bi-ticket-perforated-fill"></i> Tickets Sold</span>
+            <span><i class="bi bi-speedometer2"></i> Avg Occupancy</span>
+            <span><i class="bi bi-signpost-2-fill"></i> Busiest Line</span>
+            <span><i class="bi bi-geo-alt-fill"></i> Busiest Station</span>
+          </div>
+        </div>
+        <div class="db-footer">
+          <a href="{{ PBI_URL }}" target="_blank" class="db-btn">
+            <i class="bi bi-box-arrow-up-right"></i> Open Dashboard
+          </a>
+        </div>
+      </div>
+
+      <!-- Bus Operations -->
+      <div class="db-card">
+        <div class="db-card-header" style="background:linear-gradient(135deg,#1a3a4a,#1e6e5e);">
+          <div class="db-icon"><i class="bi bi-bus-front-fill"></i></div>
+          <div>
+            <div class="db-title">Bus Operations</div>
+            <div class="db-subtitle">Monitor fleet performance</div>
+          </div>
+        </div>
+        <div class="db-body">
+          <div class="db-metrics">
+            <span><i class="bi bi-speedometer2"></i> Occupancy by Bus</span>
+            <span><i class="bi bi-bar-chart-fill"></i> Capacity Utilization</span>
+            <span><i class="bi bi-person-badge-fill"></i> Driver Assignment</span>
+            <span><i class="bi bi-graph-up"></i> Bus Performance</span>
+          </div>
+        </div>
+        <div class="db-footer">
+          <a href="{{ PBI_URL }}" target="_blank" class="db-btn">
+            <i class="bi bi-box-arrow-up-right"></i> Open Dashboard
+          </a>
+        </div>
+      </div>
+
+      <!-- Station Analysis -->
+      <div class="db-card">
+        <div class="db-card-header" style="background:linear-gradient(135deg,#3a1a4a,#6e1e5e);">
+          <div class="db-icon"><i class="bi bi-geo-alt-fill"></i></div>
+          <div>
+            <div class="db-title">Station Analysis</div>
+            <div class="db-subtitle">Passenger flow at each station</div>
+          </div>
+        </div>
+        <div class="db-body">
+          <div class="db-metrics">
+            <span><i class="bi bi-arrow-down-circle-fill"></i> Boardings</span>
+            <span><i class="bi bi-arrow-up-circle-fill"></i> Alightings</span>
+            <span><i class="bi bi-clock-fill"></i> Peak Hour</span>
+            <span><i class="bi bi-speedometer2"></i> Occupancy</span>
+            <span><i class="bi bi-ticket-perforated-fill"></i> Ticket Sales</span>
+          </div>
+        </div>
+        <div class="db-footer">
+          <a href="{{ PBI_URL }}" target="_blank" class="db-btn">
+            <i class="bi bi-box-arrow-up-right"></i> Open Dashboard
+          </a>
+        </div>
+      </div>
+
+      <!-- Passenger vs Ticket Validation -->
+      <div class="db-card">
+        <div class="db-card-header" style="background:linear-gradient(135deg,#4a2a1a,#8e4e1e);">
+          <div class="db-icon"><i class="bi bi-check2-all"></i></div>
+          <div>
+            <div class="db-title">Passenger vs Ticket Validation</div>
+            <div class="db-subtitle">CV counts vs manual ticket sales</div>
+          </div>
+        </div>
+        <div class="db-body">
+          <div class="db-metrics">
+            <span><i class="bi bi-camera-video-fill"></i> Passenger Count (CV)</span>
+            <span><i class="bi bi-ticket-perforated-fill"></i> Tickets Sold</span>
+            <span><i class="bi bi-plus-slash-minus"></i> Difference</span>
+            <span><i class="bi bi-percent"></i> Validation %</span>
+          </div>
+        </div>
+        <div class="db-footer">
+          <a href="{{ PBI_URL }}" target="_blank" class="db-btn">
+            <i class="bi bi-box-arrow-up-right"></i> Open Dashboard
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Right — ETL Status sidebar -->
+  <div class="status-col">
+    <h2 class="section-title">ETL Status</h2>
+    <div class="status-card">
+      <div class="status-row">
+        <span class="status-label">Database</span>
+        <span class="status-value">
+          {% if db_ok %}
+          <span class="s-badge s-ok"><i class="bi bi-circle-fill"></i> Connected</span>
+          {% else %}
+          <span class="s-badge s-err"><i class="bi bi-circle-fill"></i> Error</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Last ETL Run</span>
+        <span class="status-value mono">
+          {% if last_etl %}{{ last_etl.strftime('%Y-%m-%d %H:%M') }}{% else %}Never{% endif %}
+        </span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Analytics Tables</span>
+        <span class="status-value">
+          <span class="s-badge s-ok">{{ analytics_tables }} / 6</span>
+        </span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Prediction Model</span>
+        <span class="status-value">
+          {% if ml_ready %}
+          <span class="s-badge s-ok"><i class="bi bi-check-circle-fill"></i> Ready</span>
+          {% else %}
+          <span class="s-badge s-warn"><i class="bi bi-exclamation-circle-fill"></i> Not trained</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Total Passengers</span>
+        <span class="status-value mono">{{ "{:,}".format(total_pax) }}</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Passengers Today</span>
+        <span class="status-value mono">{{ "{:,}".format(today_pax) }}</span>
+      </div>
+    </div>
+
+    <h2 class="section-title mt-4">Data Flow</h2>
+    <div class="flow-card">
+      {% set steps = [
+        ('bi-camera-video-fill',     '#3b7dd8', 'Camera'),
+        ('bi-eye-fill',              '#8e24aa', 'Computer Vision'),
+        ('bi-database-fill',         '#00838f', 'PostgreSQL'),
+        ('bi-arrow-repeat',          '#2e7d32', 'ETL Pipeline'),
+        ('bi-bar-chart-line-fill',   '#f57c00', 'Power BI'),
+        ('bi-lightning-charge-fill', '#e53935', 'Decision Making'),
+      ] %}
+      {% for icon, color, label in steps %}
+      <div class="flow-step">
+        <div class="flow-dot" style="background:{{ color }};">
+          <i class="bi {{ icon }}" style="color:#fff;font-size:13px;"></i>
+        </div>
+        <span class="flow-label">{{ label }}</span>
+      </div>
+      {% if not loop.last %}
+      <div class="flow-arrow"><i class="bi bi-chevron-down"></i></div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Analytics Features ────────────────────────────────────────────── -->
+<div class="features-section">
+  <h2 class="section-title">Analytics Capabilities</h2>
+  <div class="features-grid">
+    {% set features = [
+      ('bi-graph-up-arrow',  'Executive KPIs',       'Monitor overall transport network performance'),
+      ('bi-calendar3',       'Historical Trends',    'Daily, weekly, and monthly passenger analysis'),
+      ('bi-bus-front-fill',  'Fleet Performance',    'Bus occupancy, capacity utilization, peak hours'),
+      ('bi-check2-all',      'Ticket Validation',    'Compare CV passenger counts with ticket sales'),
+      ('bi-lightbulb-fill',  'Recommendations',      'Evaluate AI recommendation effectiveness'),
+      ('bi-clock-history',   'Peak Hour Analysis',   'Identify congestion patterns by time and station'),
+    ] %}
+    {% for icon, title, desc in features %}
+    <div class="feature-card">
+      <div class="feature-icon"><i class="bi {{ icon }}"></i></div>
+      <div class="feature-body">
+        <div class="feature-title">{{ title }}</div>
+        <div class="feature-desc">{{ desc }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ── CTA ───────────────────────────────────────────────────────────── -->
+<div class="powerbi-cta">
+  <div class="cta-icon"><i class="bi bi-bar-chart-line-fill"></i></div>
+  <div class="cta-body">
+    <div class="cta-title">Launch Power BI Dashboard</div>
+    <div class="cta-desc">
+      The SmartTransport Power BI dashboard is published online.
+      Click the button to open it directly in your browser — no installation required.
+    </div>
+  </div>
+  <div class="cta-action">
+    <a href="{{ PBI_URL }}" target="_blank" class="cta-btn">
+      <i class="bi bi-box-arrow-up-right me-2"></i> Open Business Intelligence
+    </a>
+    <div class="cta-hint">Opens in Power BI Online</div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+  .bi-intro { font-size:14px; color:#4a5568; line-height:1.6; max-width:780px; margin-bottom:28px; }
+  .section-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#6c7a8d; margin:0 0 14px; }
+
+  .analytics-layout { display:grid; grid-template-columns:1fr 280px; gap:24px; align-items:start; margin-bottom:32px; }
+  @media(max-width:900px){ .analytics-layout{grid-template-columns:1fr;} }
+
+  .dashboard-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+
+  .db-card { background:#fff; border:1px solid #e8ecf0; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; transition:box-shadow .15s,transform .15s; }
+  .db-card:hover { box-shadow:0 8px 24px rgba(0,0,0,.1); transform:translateY(-2px); }
+  .db-card-header { padding:18px 18px 14px; display:flex; align-items:flex-start; gap:14px; color:#fff; }
+  .db-icon { width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+  .db-title { font-size:15px; font-weight:700; line-height:1.2; }
+  .db-subtitle { font-size:12px; opacity:.8; margin-top:2px; }
+  .db-body { padding:14px 18px; flex:1; }
+  .db-metrics { display:flex; flex-direction:column; gap:7px; }
+  .db-metrics span { font-size:12.5px; color:#4a5568; display:flex; align-items:center; gap:7px; }
+  .db-metrics i { color:#3b7dd8; font-size:13px; }
+  .db-footer { padding:12px 18px; border-top:1px solid #f0f4f8; }
+  .db-btn { display:inline-flex; align-items:center; gap:6px; padding:7px 16px; border-radius:8px; background:#f0f4f8; color:#3b7dd8; font-size:13px; font-weight:600; text-decoration:none; transition:background .15s; }
+  .db-btn:hover { background:#e8f0fe; }
+
+  .status-card { background:#fff; border:1px solid #e8ecf0; border-radius:12px; overflow:hidden; }
+  .status-row { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; border-bottom:1px solid #f0f4f8; gap:8px; }
+  .status-row:last-child { border-bottom:none; }
+  .status-label { font-size:12px; font-weight:600; color:#6c7a8d; white-space:nowrap; }
+  .status-value { font-size:12.5px; color:#1e2d3d; text-align:right; }
+  .mono { font-family:'Consolas',monospace; font-size:11px; }
+  .s-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700; }
+  .s-ok   { background:#e8f5e9; color:#2e7d32; }
+  .s-err  { background:#fdecea; color:#c0392b; }
+  .s-warn { background:#fff8e1; color:#f57f17; }
+
+  .flow-card { background:#fff; border:1px solid #e8ecf0; border-radius:12px; padding:16px; display:flex; flex-direction:column; align-items:center; }
+  .flow-step { display:flex; align-items:center; gap:10px; width:100%; padding:5px 0; }
+  .flow-dot { width:30px; height:30px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .flow-label { font-size:13px; font-weight:600; color:#1e2d3d; }
+  .flow-arrow { font-size:12px; color:#a0aab4; padding-left:9px; }
+  .mt-4 { margin-top:24px; }
+
+  .features-section { margin-bottom:32px; }
+  .features-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; }
+  .feature-card { background:#fff; border:1px solid #e8ecf0; border-radius:10px; padding:14px 16px; display:flex; align-items:flex-start; gap:12px; transition:box-shadow .15s; }
+  .feature-card:hover { box-shadow:0 4px 12px rgba(0,0,0,.06); }
+  .feature-icon { width:36px; height:36px; border-radius:8px; flex-shrink:0; background:#e8f0fe; color:#3b7dd8; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .feature-title { font-size:13px; font-weight:700; color:#1e2d3d; margin-bottom:2px; }
+  .feature-desc  { font-size:12px; color:#6c7a8d; line-height:1.4; }
+
+  .powerbi-cta { background:linear-gradient(135deg,#1a2a4a,#2e4e87); border-radius:14px; padding:28px 32px; display:flex; align-items:center; gap:24px; flex-wrap:wrap; }
+  .cta-icon { font-size:40px; color:rgba(255,255,255,.5); flex-shrink:0; }
+  .cta-body { flex:1; min-width:200px; }
+  .cta-title { font-size:18px; font-weight:700; color:#fff; margin-bottom:6px; }
+  .cta-desc  { font-size:13px; color:rgba(255,255,255,.75); line-height:1.5; }
+  .cta-action { display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0; }
+  .cta-btn { display:inline-flex; align-items:center; padding:12px 24px; border-radius:10px; background:#fff; color:#1a2a4a; font-size:14px; font-weight:700; text-decoration:none; transition:opacity .15s; white-space:nowrap; }
+  .cta-btn:hover { opacity:.9; }
+  .cta-hint { font-size:11px; color:rgba(255,255,255,.5); }
+</style>
+{% endblock %}

@@ -365,14 +365,20 @@
       </a>
     </li>
     <li>
+      <a href="{{ url_for('analytics.index') }}"
+         class="{{ 'active' if request.blueprint == 'analytics' }}">
+        <i class="bi bi-bar-chart-line-fill"></i> Analytics
+      </a>
+    </li>
+  </ul>
+
+  <!-- System -->
+  <span class="sidebar-section-label">System</span>
+  <ul class="sidebar-nav">
+    <li>
       <a href="{{ url_for('settings.index') }}"
          class="{{ 'active' if request.blueprint == 'settings' }}">
         <i class="bi bi-gear-fill"></i> Settings
-      </a>
-    </li>
-    <li>
-      <a href="#" target="_blank">
-        <i class="bi bi-bar-chart-line-fill"></i> Analytics (Power BI)
       </a>
     </li>
   </ul>
