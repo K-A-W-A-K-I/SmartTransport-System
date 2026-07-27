@@ -8,6 +8,11 @@
     <h1>Recommendation Center</h1>
     <div class="breadcrumb">AI-generated operational recommendations</div>
   </div>
+  <form method="POST" action="{{ url_for('recommendations.generate') }}" id="generateForm">
+    <button type="submit" class="btn-generate" id="generateBtn">
+      <i class="bi bi-lightning-charge-fill"></i> Generate Recommendations
+    </button>
+  </form>
 </div>
 
 {% if error %}
@@ -398,12 +403,29 @@
   .btn-ack:hover { background: #1565c0; }
   .btn-resolve { padding: 8px 16px; border-radius: 7px; background: #388e3c; color: #fff; border: none; font-size: 13px; font-weight: 600; cursor: pointer; }
   .btn-resolve:hover { background: #2e7d32; }
-</style>
+
+  /* Generate button */
+  .btn-generate {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: 8px;
+    background: #3b7dd8; color: #fff; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-generate:hover    { background: #2d69c4; }
+  .btn-generate:disabled { background: #a0b4d0; cursor: not-allowed; }</style>
 {% endblock %}
 
 
 {% block extra_js %}
 <script>
+// Show loading state when generating recommendations
+document.getElementById('generateForm').addEventListener('submit', function() {
+  var btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Generating…';
+});
+
 const DETAIL_URL = "/recommendations/{id}/detail";
 const ACK_URL    = "/recommendations/{id}/acknowledge";
 const RESOLVE_URL= "/recommendations/{id}/resolve";

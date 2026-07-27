@@ -18,7 +18,7 @@ recommendations_bp = Blueprint("recommendations", __name__, url_prefix="/recomme
 def index():
     page     = request.args.get("page", 1, type=int)
     severity = request.args.get("severity", "all")
-    status   = request.args.get("status", "pending")   # default: show pending
+    status   = request.args.get("status", "pending")
     days     = request.args.get("days", 7, type=int)
 
     summary = get_summary()
@@ -32,13 +32,28 @@ def index():
                                     "days": days})
 
 
+@recommendations_bp.route("/generate", methods=["POST"])
+def generate():
+    """Trigger the dispatcher to generate new recommendations."""
+    try:
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+        from recommendation.dispatcher import Dispatcher
+        d    = Dispatcher()
+        recs = d.network_scan(min_priority="MEDIUM")
+        n    = d.save(recs)
+        flash(f"✓ Generated {len(recs)} recommendation(s) — {n} new saved.", "success")
+    except Exception as e:
+        flash(f"Error generating recommendations: {e}", "error")
+    return redirect(url_for("recommendations.index"))
+
+
 @recommendations_bp.route("/<int:rec_id>/detail")
 def detail(rec_id):
-    """JSON endpoint for the detail modal."""
     rec = get_recommendation_by_id(rec_id)
     if not rec:
         return jsonify({"error": "Not found"}), 404
-    # Serialize datetime/Decimal fields
     for key, val in rec.items():
         if hasattr(val, 'isoformat'):
             rec[key] = val.isoformat()
@@ -62,6 +77,5 @@ def do_resolve(rec_id):
 
 
 def _back():
-    """Redirect back preserving filters."""
     ref = request.referrer
     return ref if ref else url_for("recommendations.index")

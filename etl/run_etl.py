@@ -102,6 +102,18 @@ def run(pipeline_name: str = "main") -> int:
         return 1
 
     _log_summary(start_time, counts)
+
+    # ── Auto-generate recommendations after ETL ──────────────
+    logger.info("── Step 4: Generate Recommendations")
+    try:
+        from recommendation.dispatcher import Dispatcher
+        dispatcher = Dispatcher()
+        recs  = dispatcher.network_scan(min_priority="MEDIUM")
+        saved = dispatcher.save(recs)
+        logger.info(f"   Recommendations generated: {len(recs)} | new saved: {saved}")
+    except Exception as e:
+        logger.warning(f"Recommendation generation skipped: {e}")
+
     return 0
 
 
