@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% block page_title %}Profile{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Operator Profile</h1>
+    <div class="breadcrumb">{{ op_role }} · {{ op_terminal }}</div>
+  </div>
+</div>
+
+{% if db_error %}
+<div class="alert alert-warning mb-4" style="font-size:13px;">
+  <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ db_error }}
+</div>
+{% endif %}
+
+<div class="profile-layout">
+
+  <!-- ── Left column: identity + edit ─────────────────────────────── -->
+  <div class="profile-left">
+
+    <!-- Avatar card -->
+    <div class="identity-card">
+      <div class="big-avatar">{{ op_initials }}</div>
+      <div class="identity-name">{{ op_name }}</div>
+      <div class="identity-role">{{ op_role }}</div>
+      <div class="identity-terminal">
+        <i class="bi bi-display"></i> {{ op_terminal }}
+      </div>
+      <div class="identity-meta">
+        {% if op_email %}
+        <div class="meta-row">
+          <i class="bi bi-envelope-fill"></i> {{ op_email }}
+        </div>
+        {% endif %}
+        {% if op_phone %}
+        <div class="meta-row">
+          <i class="bi bi-telephone-fill"></i> {{ op_phone }}
+        </div>
+        {% endif %}
+        <div class="meta-row">
+          <i class="bi bi-calendar3"></i> {{ today.strftime('%A, %d %B %Y') }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit form -->
+    <div class="edit-card">
+      <div class="edit-card-title">
+        <i class="bi bi-pencil-fill"></i> Edit Profile
+      </div>
+      <form method="POST" action="{{ url_for('profile.update') }}">
+        <div class="ef-row">
+          <label class="ef-label">Display Name</label>
+          <input type="text" name="name" class="ef-input" value="{{ op_name }}" required>
+        </div>
+        <div class="ef-row">
+          <label class="ef-label">Role</label>
+          <input type="text" name="role" class="ef-input" value="{{ op_role }}">
+        </div>
+        <div class="ef-row">
+          <label class="ef-label">Terminal</label>
+          <input type="text" name="terminal" class="ef-input" value="{{ op_terminal }}">
+        </div>
+        <div class="ef-row">
+          <label class="ef-label">Email</label>
+          <input type="email" name="email" class="ef-input" value="{{ op_email }}">
+        </div>
+        <div class="ef-row">
+          <label class="ef-label">Phone</label>
+          <input type="text" name="phone" class="ef-input" value="{{ op_phone }}">
+        </div>
+        <button type="submit" class="ef-save">
+          <i class="bi bi-check-lg me-1"></i> Save Changes
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- ── Right column: live stats ──────────────────────────────────── -->
+  <div class="profile-right">
+
+    <!-- Today's activity -->
+    <div class="stats-section-title">Today's Activity</div>
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8f0fe;">
+          <i class="bi bi-camera-video-fill" style="color:#3b7dd8;"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-val">{{ sessions_today }}</div>
+          <div class="stat-label">CV Sessions</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e8f5e9;">
+          <i class="bi bi-people-fill" style="color:#2e7d32;"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-val">{{ pax_today }}</div>
+          <div class="stat-label">Passengers Counted</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#f3e5f5;">
+          <i class="bi bi-ticket-perforated-fill" style="color:#8e24aa;"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-val">{{ tickets_today }}</div>
+          <div class="stat-label">Tickets Entered</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#e3f2fd;">
+          <i class="bi bi-check-circle-fill" style="color:#1565c0;"></i>
+        </div>
+        <div class="stat-body">
+          <div class="stat-val">{{ recs_handled }}</div>
+          <div class="stat-label">Recs Handled</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- All-time stats -->
+    <div class="stats-section-title mt-section">All-Time Statistics</div>
+    <div class="alltime-card">
+      <div class="at-row">
+        <span class="at-label">Total Passengers Monitored</span>
+        <span class="at-val">{{ "{:,}".format(total_pax) }}</span>
+      </div>
+      <div class="at-row">
+        <span class="at-label">Recommendations Resolved</span>
+        <span class="at-val">{{ recs_resolved }}</span>
+      </div>
+      <div class="at-row">
+        <span class="at-label">Recommendations Pending</span>
+        <span class="at-val">
+          {% if recs_pending > 0 %}
+          <span style="color:#e65100; font-weight:700;">{{ recs_pending }}</span>
+          {% else %}
+          <span style="color:#2e7d32;">{{ recs_pending }}</span>
+          {% endif %}
+        </span>
+      </div>
+      <div class="at-row">
+        <span class="at-label">Last CV Session</span>
+        <span class="at-val mono">
+          {% if last_activity %}
+            {{ last_activity.strftime('%Y-%m-%d %H:%M') }}
+          {% else %}
+            —
+          {% endif %}
+        </span>
+      </div>
+    </div>
+
+    <!-- Quick nav -->
+    <div class="stats-section-title mt-section">Quick Access</div>
+    <div class="quick-nav">
+      <a href="{{ url_for('recommendations.index') }}" class="qn-btn">
+        <i class="bi bi-lightbulb-fill"></i>
+        <span>Recommendations</span>
+        {% if op_pending > 0 %}
+        <span class="qn-badge">{{ op_pending }}</span>
+        {% endif %}
+      </a>
+      <a href="{{ url_for('activity.index') }}" class="qn-btn">
+        <i class="bi bi-activity"></i>
+        <span>System Activity</span>
+      </a>
+      <a href="{{ url_for('settings.index') }}" class="qn-btn">
+        <i class="bi bi-gear-fill"></i>
+        <span>Settings</span>
+      </a>
+      <a href="{{ url_for('analytics.index') }}" class="qn-btn">
+        <i class="bi bi-bar-chart-line-fill"></i>
+        <span>Analytics</span>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_css %}
+<style>
+  .profile-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .profile-layout { grid-template-columns: 1fr; }
+  }
+
+  /* ── Identity card ───────────────────────────────────────────────── */
+  .identity-card {
+    background: linear-gradient(160deg, #1a2a4a, #2e4e87);
+    border-radius: 14px; padding: 28px 24px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; color: #fff;
+  }
+  .big-avatar {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 3px solid rgba(255,255,255,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 700; margin-bottom: 14px;
+  }
+  .identity-name     { font-size: 18px; font-weight: 700; }
+  .identity-role     { font-size: 13px; opacity: .8; margin-top: 3px; }
+  .identity-terminal {
+    font-size: 12px; opacity: .65; margin-top: 6px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .identity-meta {
+    margin-top: 16px; width: 100%;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding-top: 14px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .meta-row {
+    font-size: 12.5px; color: rgba(255,255,255,0.75);
+    display: flex; align-items: center; gap: 7px;
+    justify-content: center;
+  }
+
+  /* ── Edit form ───────────────────────────────────────────────────── */
+  .edit-card {
+    background: #fff; border: 1px solid #e8ecf0;
+    border-radius: 12px; padding: 18px 20px; margin-top: 16px;
+  }
+  .edit-card-title {
+    font-size: 13px; font-weight: 700; color: #1e2d3d;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 7px;
+  }
+  .ef-row { display: flex; flex-direction: column; gap: 3px; margin-bottom: 12px; }
+  .ef-label { font-size: 11px; font-weight: 700; color: #6c7a8d; text-transform: uppercase; letter-spacing: .05em; }
+  .ef-input {
+    padding: 8px 10px; border: 1px solid #dde3ea; border-radius: 7px;
+    font-size: 13px; color: #1e2d3d; background: #f6f8fb; outline: none;
+    transition: border .15s;
+  }
+  .ef-input:focus { border-color: #3b7dd8; background: #fff; }
+  .ef-save {
+    width: 100%; padding: 9px; border-radius: 8px;
+    background: #3b7dd8; color: #fff; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background .15s; margin-top: 4px;
+  }
+  .ef-save:hover { background: #2d69c4; }
+
+  /* ── Stats grid ──────────────────────────────────────────────────── */
+  .stats-section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: #6c7a8d; margin-bottom: 12px;
+  }
+  .mt-section { margin-top: 24px; }
+
+  .stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .stat-card {
+    background: #fff; border: 1px solid #e8ecf0; border-radius: 12px;
+    padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+  }
+  .stat-icon {
+    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+  }
+  .stat-val   { font-size: 22px; font-weight: 700; color: #1e2d3d; line-height: 1; }
+  .stat-label { font-size: 11px; color: #6c7a8d; margin-top: 2px; }
+
+  /* ── All-time card ───────────────────────────────────────────────── */
+  .alltime-card {
+    background: #fff; border: 1px solid #e8ecf0;
+    border-radius: 12px; overflow: hidden;
+  }
+  .at-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 16px; border-bottom: 1px solid #f0f4f8;
+    font-size: 13px;
+  }
+  .at-row:last-child { border-bottom: none; }
+  .at-label { color: #6c7a8d; font-size: 12.5px; }
+  .at-val   { font-weight: 700; color: #1e2d3d; }
+  .mono     { font-family: 'Consolas', monospace; font-size: 12px; }
+
+  /* ── Quick nav ───────────────────────────────────────────────────── */
+  .quick-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .qn-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px; border-radius: 10px;
+    background: #fff; border: 1px solid #e8ecf0;
+    text-decoration: none; color: #1e2d3d;
+    font-size: 13px; font-weight: 600;
+    transition: box-shadow .15s, background .15s;
+    position: relative;
+  }
+  .qn-btn:hover { background: #f0f4f8; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .qn-btn i { font-size: 16px; color: #3b7dd8; }
+  .qn-badge {
+    position: absolute; top: 8px; right: 10px;
+    background: #e53935; color: #fff;
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 20px;
+  }
+</style>
+{% endblock %}

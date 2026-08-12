@@ -80,6 +80,10 @@ FEATURE_COLS = [
     "lag_1h_boardings",     # boardings at same station 1 hour ago
     "lag_1w_boardings",     # boardings same hour last week
     "avg_tickets_hour",     # avg tickets sold this station/line/hour
+    "hour_sin",             # cyclical encoding of hour (sine)
+    "hour_cos",             # cyclical encoding of hour (cosine)
+    "month_sin",            # cyclical encoding of month (sine)
+    "month_cos",            # cyclical encoding of month (cosine)
 ]
 
 TARGET_BOARDINGS  = "total_boardings"
@@ -153,6 +157,14 @@ def build_features(df: pd.DataFrame) -> pd.DataFrame:
     )
     df["avg_tickets_hour"] = ticket_avg
 
+    # Cyclical encoding for hour (avoids 0/23 discontinuity)
+    df["hour_sin"] = (2 * 3.14159 * df["hour_start"].dt.hour / 24).apply(lambda x: round(__import__("math").sin(x), 6))
+    df["hour_cos"] = (2 * 3.14159 * df["hour_start"].dt.hour / 24).apply(lambda x: round(__import__("math").cos(x), 6))
+
+    # Cyclical encoding for month (captures seasonal continuity)
+    df["month_sin"] = (2 * 3.14159 * df["month"] / 12).apply(lambda x: round(__import__("math").sin(x), 6))
+    df["month_cos"] = (2 * 3.14159 * df["month"] / 12).apply(lambda x: round(__import__("math").cos(x), 6))
+
     # is_weekend as int for sklearn
     df["is_weekend"] = df["is_weekend"].astype(int)
 
@@ -196,10 +208,22 @@ def train(model_type: str = "random_forest") -> dict:
     # Stack targets
     Y = np.column_stack([y_boardings, y_occupancy])
 
-    X_train, X_test, Y_train, Y_test = train_test_split(
-        X, Y, test_size=0.2, random_state=42
-    )
+    # ── Chronological split (required for time-series data) ──────────────
+    # Sort by hour_start to ensure chronological order
+    df_sorted   = df.sort_values("hour_start")
+    split_idx   = int(len(df_sorted) * 0.80)
+    split_date  = df_sorted.iloc[split_idx]["hour_start"]
 
+    X_all = df_sorted[FEATURE_COLS].values
+    Y_all = np.column_stack([
+        df_sorted[TARGET_BOARDINGS].values,
+        df_sorted[TARGET_OCCUPANCY].values
+    ])
+
+    X_train, X_test = X_all[:split_idx], X_all[split_idx:]
+    Y_train, Y_test = Y_all[:split_idx], Y_all[split_idx:]
+
+    logger.info(f"Chronological split at: {split_date}")
     logger.info(f"Train: {len(X_train):,} rows | Test: {len(X_test):,} rows")
 
     # Build model
@@ -274,6 +298,29 @@ def train(model_type: str = "random_forest") -> dict:
         pickle.dump(meta, f)
 
     logger.info(f"Model saved to {MODEL_PATH}")
+
+    # ── Feature importance ────────────────────────────────────────────────
+    try:
+        # MultiOutputRegressor stores per-output estimators
+        importances_pax = model.estimators_[0].feature_importances_
+        importances_occ = model.estimators_[1].feature_importances_
+        avg_importance  = (importances_pax + importances_occ) / 2
+
+        importance_dict = dict(zip(FEATURE_COLS, avg_importance.tolist()))
+        sorted_features = sorted(importance_dict.items(), key=lambda x: x[1], reverse=True)
+
+        logger.info("Feature importance (avg across both targets):")
+        for feat, imp in sorted_features:
+            bar = "█" * int(imp * 100)
+            logger.info(f"  {feat:<22} {imp:.4f}  {bar}")
+
+        # Save importance to meta
+        meta["feature_importance"] = importance_dict
+        with open(META_PATH, "wb") as f:
+            pickle.dump(meta, f)
+    except Exception as e:
+        logger.warning(f"Could not compute feature importance: {e}")
+
     return metrics
 
 

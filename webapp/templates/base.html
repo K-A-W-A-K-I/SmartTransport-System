@@ -413,14 +413,14 @@
   </div>
 
   <!-- User -->
-  <div class="topbar-user">
-    <div class="topbar-avatar">OM</div>
+  <a href="{{ url_for('profile.index') }}" class="topbar-user" style="text-decoration:none;">
+    <div class="topbar-avatar">{{ op_initials }}</div>
     <div class="topbar-user-info">
-      <span class="uname">Ops Manager</span>
-      <span class="urole">HQ Terminal</span>
+      <span class="uname">{{ op_name }}</span>
+      <span class="urole">{{ op_terminal }}</span>
     </div>
     <i class="bi bi-chevron-down" style="font-size:11px;color:#6c7a8d;margin-left:2px;"></i>
-  </div>
+  </a>
 </header>
 
 <!-- ═══════════════════════════════════════════════════════════════
