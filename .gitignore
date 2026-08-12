@@ -19,6 +19,9 @@ venv/
 runs/
 *.pt
 
+# ML model artifacts (large binary files)
+prediction/models/*.pkl
+
 # Large data files — download separately
 data/videos/
 
