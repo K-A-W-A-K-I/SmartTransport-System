@@ -391,6 +391,12 @@ class CrowdPredictor:
 
         avg_tickets = self.meta["ticket_avg"].get(key, 0)
 
+        import math
+        hour_sin  = round(math.sin(2 * math.pi * hour / 24), 6)
+        hour_cos  = round(math.cos(2 * math.pi * hour / 24), 6)
+        month_sin = round(math.sin(2 * math.pi * month / 12), 6)
+        month_cos = round(math.cos(2 * math.pi * month / 12), 6)
+
         features = np.array([[
             station_id,
             line_id,
@@ -401,6 +407,10 @@ class CrowdPredictor:
             lag_1h_boardings,
             lag_1w_boardings,
             avg_tickets,
+            hour_sin,
+            hour_cos,
+            month_sin,
+            month_cos,
         ]])
 
         pred = self.model.predict(features)[0]

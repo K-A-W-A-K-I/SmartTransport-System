@@ -97,6 +97,7 @@ def run(months_ahead: int = 6) -> None:
 
         # Build feature matrix: n_pairs × n_slots rows
         rows = []
+        import math
         for pair in pairs:
             sid, lid = pair["station_id"], pair["line_id"]
             for weekday in WEEKDAYS:
@@ -104,8 +105,13 @@ def run(months_ahead: int = 6) -> None:
                     k   = (sid, lid, hour)
                     lag = meta["station_hour_avg"].get(k, 0)
                     tkt = meta["ticket_avg"].get(k, 0)
+                    hour_sin  = round(math.sin(2 * math.pi * hour / 24), 6)
+                    hour_cos  = round(math.cos(2 * math.pi * hour / 24), 6)
+                    month_sin = round(math.sin(2 * math.pi * mn / 12), 6)
+                    month_cos = round(math.cos(2 * math.pi * mn / 12), 6)
                     rows.append([sid, lid, hour, weekday, mn,
-                                 int(weekday >= 5), lag, lag, tkt])
+                                 int(weekday >= 5), lag, lag, tkt,
+                                 hour_sin, hour_cos, month_sin, month_cos])
 
         X     = np.array(rows, dtype=float)
         preds = model.predict(X)                          # (n_pairs*n_slots, 2)
