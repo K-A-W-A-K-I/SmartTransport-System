@@ -92,6 +92,7 @@
         <th class="text-center">Peak Occ.</th>
         <th class="text-center">Occ. %</th>
         <th class="text-center">Status</th>
+        <th class="text-center">Condition</th>
         <th class="text-center">Actions</th>
       </tr>
     </thead>
@@ -124,6 +125,20 @@
           <span class="status-badge status-{{ b.status | lower }}">
             {{ b.status | title }}
           </span>
+        </td>
+        <td class="text-center">
+          {# Operational condition derived from status + occupancy #}
+          {% if b.status | lower == 'inactive' or b.status | lower == 'maintenance' %}
+            <span class="cond-badge cond-inactive">⚫ Inactive</span>
+          {% elif occ >= 95 %}
+            <span class="cond-badge cond-overloaded">🔴 Overloaded</span>
+          {% elif occ >= 80 %}
+            <span class="cond-badge cond-high">🟠 High Occupancy</span>
+          {% elif occ >= 50 %}
+            <span class="cond-badge cond-moderate">🟡 Moderate</span>
+          {% else %}
+            <span class="cond-badge cond-normal">🟢 Normal</span>
+          {% endif %}
         </td>
         <td class="text-center">
           <button class="btn-edit"
@@ -269,6 +284,14 @@
   .btn-cancel { padding:8px 16px; border-radius:7px; background:#f0f4f8; color:#4a5568; border:none; font-size:13px; cursor:pointer; }
   .btn-save { padding:8px 18px; border-radius:7px; background:#3b7dd8; color:#fff; border:none; font-size:13px; font-weight:600; cursor:pointer; }
   .btn-save:hover { background:#2d69c4; }
+
+  /* Operational condition badge */
+  .cond-badge { font-size:11.5px; font-weight:600; white-space:nowrap; }
+  .cond-overloaded { color:#c0392b; }
+  .cond-high       { color:#e65100; }
+  .cond-moderate   { color:#f57f17; }
+  .cond-normal     { color:#2e7d32; }
+  .cond-inactive   { color:#757575; }
 </style>
 {% endblock %}
 
